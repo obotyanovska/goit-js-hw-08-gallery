@@ -8,7 +8,7 @@ const refs = {
   modalBtnClose: document.querySelector('button[data-action="close-lightbox"]'),
 };
 
-function galleryItemFactory({ preview, original, description }) {
+function galleryItemFactory({ preview, original, description }, index) {
   return `<li class="gallery__item">
     <a
       class="gallery__link"
@@ -19,13 +19,16 @@ function galleryItemFactory({ preview, original, description }) {
         src="${preview}"
         data-source="${original}"
         alt="${description}"
+        data-index="${index}"
       />
     </a>
   </li>`;
 }
 
 function renderGallery(array) {
-  const galleryElems = array.map(item => galleryItemFactory(item)).join('');
+  const galleryElems = array
+    .map((item, index) => galleryItemFactory(item, index))
+    .join('');
   refs.galleryList.insertAdjacentHTML('beforeend', galleryElems);
 }
 
@@ -35,21 +38,39 @@ refs.galleryList.addEventListener('click', onImageOpenClick);
 refs.modalBtnClose.addEventListener('click', onCloseModal);
 refs.overlay.addEventListener('click', onOverlayCloseClick);
 
+const collectionOriginalSrc = [...galleryItems].map(item => item.original);
+const collectionAlt = [...galleryItems].map(item => item.description);
+
+// function onImageOpenClick(e) {
+//   if (e.target.nodeName !== 'IMG') {
+//     return;
+//   }
+//   window.addEventListener('keydown', onEscapeKeyPress);
+//   window.addEventListener('keydown', scrollImagesInModal);
+//   e.preventDefault();
+//   const currentImage = e.target;
+//   refs.currentImageInModal.src = currentImage.dataset.source;
+//   refs.currentImageInModal.alt = currentImage.alt;
+//   refs.lightbox.classList.add('is-open');
+// }
+
 function onImageOpenClick(e) {
   if (e.target.nodeName !== 'IMG') {
     return;
   }
   window.addEventListener('keydown', onEscapeKeyPress);
-  // window.addEventListener('keydown', scrollImagesInModal);
   e.preventDefault();
-  const currentImage = e.target;
-  refs.currentImageInModal.src = currentImage.dataset.source;
-  refs.currentImageInModal.alt = currentImage.alt;
+  let currentIndex = e.target.dataset.index;
+  window.addEventListener('keydown', scrollImagesInModal);
+
+  refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
+  refs.currentImageInModal.alt = collectionAlt[currentIndex];
   refs.lightbox.classList.add('is-open');
 }
 
 function onCloseModal(e) {
   window.removeEventListener('keydown', onEscapeKeyPress);
+  window.removeEventListener('keydown', scrollImagesInModal);
   refs.lightbox.classList.remove('is-open');
   refs.currentImageInModal.src = '';
   refs.currentImageInModal.alt = '';
@@ -67,4 +88,22 @@ function onEscapeKeyPress(e) {
   }
 }
 
-// Добавить слушателя мыши при наведении на изображение - изменение поинтера + скейл
+function scrollImagesInModal(e) {
+  let currentIndex = collectionOriginalSrc.indexOf(
+    refs.currentImageInModal.src,
+  );
+  console.log(currentIndex);
+  if (
+    e.code === 'ArrowRight' &&
+    currentIndex < collectionOriginalSrc.length - 1
+  ) {
+    currentIndex += 1;
+  } else if (e.code === 'ArrowLeft' && currentIndex > 0) {
+    currentIndex -= 1;
+  } else {
+    onCloseModal();
+  }
+
+  refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
+  refs.currentImageInModal.alt = collectionAlt[currentIndex];
+}
