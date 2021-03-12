@@ -35,32 +35,21 @@ function renderGallery(array) {
 renderGallery(galleryItems);
 
 refs.galleryList.addEventListener('click', onImageOpenClick);
-refs.modalBtnClose.addEventListener('click', onCloseModal);
+refs.modalBtnClose.addEventListener('click', onModalClose);
 refs.overlay.addEventListener('click', onOverlayCloseClick);
 
 const collectionOriginalSrc = [...galleryItems].map(item => item.original);
 const collectionAlt = [...galleryItems].map(item => item.description);
 
-// function onImageOpenClick(e) {
-//   if (e.target.nodeName !== 'IMG') {
-//     return;
-//   }
-//   window.addEventListener('keydown', onEscapeKeyPress);
-//   window.addEventListener('keydown', scrollImagesInModal);
-//   e.preventDefault();
-//   const currentImage = e.target;
-//   refs.currentImageInModal.src = currentImage.dataset.source;
-//   refs.currentImageInModal.alt = currentImage.alt;
-//   refs.lightbox.classList.add('is-open');
-// }
-
 function onImageOpenClick(e) {
   if (e.target.nodeName !== 'IMG') {
     return;
   }
-  window.addEventListener('keydown', onEscapeKeyPress);
+
   e.preventDefault();
   let currentIndex = e.target.dataset.index;
+
+  window.addEventListener('keydown', onEscapeKeyPress);
   window.addEventListener('keydown', scrollImagesInModal);
 
   refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
@@ -68,7 +57,7 @@ function onImageOpenClick(e) {
   refs.lightbox.classList.add('is-open');
 }
 
-function onCloseModal(e) {
+function onModalClose(e) {
   window.removeEventListener('keydown', onEscapeKeyPress);
   window.removeEventListener('keydown', scrollImagesInModal);
   refs.lightbox.classList.remove('is-open');
@@ -78,13 +67,13 @@ function onCloseModal(e) {
 
 function onOverlayCloseClick(e) {
   if (e.target === e.currentTarget) {
-    onCloseModal();
+    onModalClose();
   }
 }
 
 function onEscapeKeyPress(e) {
   if (e.code === 'Escape') {
-    onCloseModal();
+    onModalClose();
   }
 }
 
@@ -92,7 +81,6 @@ function scrollImagesInModal(e) {
   let currentIndex = collectionOriginalSrc.indexOf(
     refs.currentImageInModal.src,
   );
-  console.log(currentIndex);
   if (
     e.code === 'ArrowRight' &&
     currentIndex < collectionOriginalSrc.length - 1
@@ -101,7 +89,7 @@ function scrollImagesInModal(e) {
   } else if (e.code === 'ArrowLeft' && currentIndex > 0) {
     currentIndex -= 1;
   } else {
-    onCloseModal();
+    onModalClose();
   }
 
   refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
