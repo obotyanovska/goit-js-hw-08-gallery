@@ -38,9 +38,6 @@ refs.galleryList.addEventListener('click', onImageOpenClick);
 refs.modalBtnClose.addEventListener('click', onModalClose);
 refs.overlay.addEventListener('click', onOverlayCloseClick);
 
-const collectionOriginalSrc = [...galleryItems].map(item => item.original);
-const collectionAlt = [...galleryItems].map(item => item.description);
-
 function onImageOpenClick(e) {
   if (e.target.nodeName !== 'IMG') {
     return;
@@ -52,8 +49,11 @@ function onImageOpenClick(e) {
   window.addEventListener('keydown', onEscapeKeyPress);
   window.addEventListener('keydown', scrollImagesInModal);
 
-  refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
-  refs.currentImageInModal.alt = collectionAlt[currentIndex];
+  changeDataInCurrentImage(
+    galleryItems[currentIndex].original,
+    galleryItems[currentIndex].description,
+  );
+
   refs.lightbox.classList.add('is-open');
 }
 
@@ -61,8 +61,7 @@ function onModalClose(e) {
   window.removeEventListener('keydown', onEscapeKeyPress);
   window.removeEventListener('keydown', scrollImagesInModal);
   refs.lightbox.classList.remove('is-open');
-  refs.currentImageInModal.src = '';
-  refs.currentImageInModal.alt = '';
+  changeDataInCurrentImage('', '');
 }
 
 function onOverlayCloseClick(e) {
@@ -78,13 +77,10 @@ function onEscapeKeyPress(e) {
 }
 
 function scrollImagesInModal(e) {
-  let currentIndex = collectionOriginalSrc.indexOf(
-    refs.currentImageInModal.src,
-  );
-  if (
-    e.code === 'ArrowRight' &&
-    currentIndex < collectionOriginalSrc.length - 1
-  ) {
+  let currentIndex = [...galleryItems]
+    .map(i => i.original)
+    .findIndex(i => i === refs.currentImageInModal.src);
+  if (e.code === 'ArrowRight' && currentIndex < galleryItems.length - 1) {
     currentIndex += 1;
   } else if (e.code === 'ArrowLeft' && currentIndex > 0) {
     currentIndex -= 1;
@@ -92,6 +88,13 @@ function scrollImagesInModal(e) {
     onModalClose();
   }
 
-  refs.currentImageInModal.src = collectionOriginalSrc[currentIndex];
-  refs.currentImageInModal.alt = collectionAlt[currentIndex];
+  changeDataInCurrentImage(
+    galleryItems[currentIndex].original,
+    galleryItems[currentIndex].description,
+  );
+}
+
+function changeDataInCurrentImage(src, alt) {
+  refs.currentImageInModal.src = src;
+  refs.currentImageInModal.alt = alt;
 }
